@@ -59,9 +59,9 @@ type ValidField
 
 
 type alias Model =
-    { tempratureInput : TemperatureInput
+    { temperaturesInput : TemperatureInput
     , celsiusFieldValid : ValidField
-    , farenheitFieldValid : ValidField
+    , fahrenheitFieldValid : ValidField
     }
 
 
@@ -76,9 +76,9 @@ main =
 
 init : Model
 init =
-    { tempratureInput = NoInput
+    { temperaturesInput = NoInput
     , celsiusFieldValid = Valid
-    , farenheitFieldValid = Valid
+    , fahrenheitFieldValid = Valid
     }
 
 
@@ -86,10 +86,10 @@ update : Msg -> Model -> Model
 update msg model =
     case msg of
         CelsiusChanged s ->
-            { model | tempratureInput = CelsiusInput s, celsiusFieldValid = validate s }
+            { model | temperaturesInput = CelsiusInput s, celsiusFieldValid = validate s }
 
         FahrenheitChanged s ->
-            { model | tempratureInput = FahrenheitInput s, farenheitFieldValid = validate s }
+            { model | temperaturesInput = FahrenheitInput s, fahrenheitFieldValid = validate s }
 
 
 validate : String -> ValidField
@@ -124,7 +124,7 @@ celsiusField model =
     Input.text
         (borderIndicatingError model.celsiusFieldValid)
         { onChange = CelsiusChanged
-        , text = celsiusFieldValue model.tempratureInput
+        , text = celsiusFieldValue model.temperaturesInput
         , placeholder = Nothing
         , label = Input.labelAbove [] none
         }
@@ -133,9 +133,9 @@ celsiusField model =
 fahrenheitField : Model -> Element Msg
 fahrenheitField model =
     Input.text
-        (borderIndicatingError model.farenheitFieldValid)
+        (borderIndicatingError model.fahrenheitFieldValid)
         { onChange = FahrenheitChanged
-        , text = fahrenheitFieldValue model.tempratureInput
+        , text = fahrenheitFieldValue model.temperaturesInput
         , placeholder = Nothing
         , label = Input.labelAbove [] none
         }
