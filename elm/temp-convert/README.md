@@ -1,6 +1,8 @@
 # Temperature Converter
 
-Challenges: bidirectional data flow, user-provided text input.
+**Challenges**: bidirectional data flow, user-provided text input.
+
+![Image of converter](tempconv.png)
 
 The task is to build a frame containing two textfields TC and TF 
 representing the temperature in Celsius and Fahrenheit, respectively. 
