@@ -1,4 +1,4 @@
-#Elm implementation of 7 GUIs
+# Elm implementation of 7 GUIs
 Here is the order of the challenges:
 1. [Counter](counter)
 1. [Temperature Converter](temp-convert)
