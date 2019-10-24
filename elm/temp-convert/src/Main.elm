@@ -86,7 +86,7 @@ update : Msg -> Model -> Model
 update msg model =
     case msg of
         CelsiusChanged s ->
-            { model | temperaturesInput = CelsiusInput s, celsiusFieldValid = validate s,  fahrenheitFieldValid = Valid}
+            { model | temperaturesInput = CelsiusInput s, celsiusFieldValid = validate s, fahrenheitFieldValid = Valid }
 
         FahrenheitChanged s ->
             { model | temperaturesInput = FahrenheitInput s, fahrenheitFieldValid = validate s, celsiusFieldValid = Valid }
