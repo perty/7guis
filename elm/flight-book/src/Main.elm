@@ -79,11 +79,33 @@ update msg model =
 validate : String -> ValidatedDate
 validate string =
     case pickNumbers string of
-        [ d, m, y ] ->
-            Valid (FlightDate d m y)
+        [ y, m, d ] ->
+            validateDate d m y
 
         _ ->
-            Invalid string
+            Invalid "Format: yyyy-mm-dd"
+
+
+validateDate : Int -> Int -> Int -> ValidatedDate
+validateDate day moth year =
+    if
+        year
+            > 2018
+            && year
+            < 2100
+            && moth
+            >= 1
+            && moth
+            <= 12
+            && day
+            >= 1
+            && day
+            <= 31
+    then
+        Valid (FlightDate day moth year)
+
+    else
+        Invalid "Invalid date"
 
 
 pickNumbers : String -> List Int
