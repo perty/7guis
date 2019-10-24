@@ -86,10 +86,10 @@ update : Msg -> Model -> Model
 update msg model =
     case msg of
         CelsiusChanged s ->
-            { model | temperaturesInput = CelsiusInput s, celsiusFieldValid = validate s }
+            { model | temperaturesInput = CelsiusInput s, celsiusFieldValid = validate s,  fahrenheitFieldValid = Valid}
 
         FahrenheitChanged s ->
-            { model | temperaturesInput = FahrenheitInput s, fahrenheitFieldValid = validate s }
+            { model | temperaturesInput = FahrenheitInput s, fahrenheitFieldValid = validate s, celsiusFieldValid = Valid }
 
 
 validate : String -> ValidField
