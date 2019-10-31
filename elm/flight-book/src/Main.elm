@@ -87,25 +87,27 @@ validate string =
 
 
 validateDate : Int -> Int -> Int -> ValidatedDate
-validateDate day moth year =
-    if
-        year
-            > 2018
-            && year
-            < 2100
-            && moth
-            >= 1
-            && moth
-            <= 12
-            && day
-            >= 1
-            && day
-            <= 31
-    then
-        Valid (FlightDate day moth year)
+validateDate day month year =
+    if validYear year && validMonth month && validDay day then
+        Valid (FlightDate day month year)
 
     else
         Invalid "Invalid date"
+
+
+validYear : Int -> Bool
+validYear year =
+    year > 2018 && year < 2100
+
+
+validMonth : Int -> Bool
+validMonth month =
+    month >= 1 && month <= 12
+
+
+validDay : Int -> Bool
+validDay day =
+    day >= 1 && day <= 31
 
 
 pickNumbers : String -> List Int
