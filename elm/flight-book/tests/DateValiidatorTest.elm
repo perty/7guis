@@ -24,6 +24,20 @@ all =
                     Main.validate "2019-02-01"
                         |> Expect.equal (Valid (FlightDate 1 2 2019))
             ]
+        , describe "Compare dates"
+            [ test "After is a later date" <|
+                \_ ->
+                    Main.after (FlightDate 1 2 2019) (FlightDate 1 1 2019)
+                        |> Expect.equal True
+            , test "Not after with same date" <|
+                \_ ->
+                    Main.after (FlightDate 1 2 2019) (FlightDate 1 2 2019)
+                        |> Expect.equal False
+            , test "Not after with earlier date" <|
+                \_ ->
+                    Main.after (FlightDate 1 1 2019) (FlightDate 1 2 2019)
+                        |> Expect.equal False
+            ]
         ]
 
 

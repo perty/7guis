@@ -1,4 +1,4 @@
-module Main exposing (FlightDate, ValidatedDate(..), main, validate)
+module Main exposing (FlightDate, ValidatedDate(..), after, main, validate)
 
 import Browser
 import Html exposing (button, div, input, option, select, text)
@@ -35,8 +35,16 @@ type ValidatedDate
     | Valid FlightDate
 
 
+type ValidModelType
+    = ValidModel
+    | InvalidT1
+    | InvalidT2
+    | T1NotAfterT2
+
+
 type alias Model =
-    { option : OptionSelection
+    { validModel : ValidModelType
+    , option : OptionSelection
     , t1 : ValidatedDate
     , t2 : ValidatedDate
     , message : String
@@ -45,7 +53,8 @@ type alias Model =
 
 init : Model
 init =
-    { option = OneWay
+    { validModel = InvalidT1
+    , option = OneWay
     , t1 = Invalid ""
     , t2 = Invalid ""
     , message = ""
@@ -61,19 +70,60 @@ update msg model =
     case msg of
         UpdateOption optionString ->
             if optionString == oneWayText then
-                { model | option = OneWay }
+                validatedModel { model | option = OneWay }
 
             else
-                { model | option = Return }
+                validatedModel { model | option = Return }
 
         UpdateT1 string ->
-            { model | t1 = validate string }
+            validatedModel { model | t1 = validate string }
 
         UpdateT2 string ->
-            { model | t2 = validate string }
+            validatedModel { model | t2 = validate string }
 
         BookingRequested ->
-            { model | message = "Booking requested" }
+            validatedModel { model | message = "Booking requested" }
+
+
+validatedModel : Model -> Model
+validatedModel model =
+    case model.option of
+        OneWay ->
+            case model.t1 of
+                Invalid _ ->
+                    { model | validModel = InvalidT1 }
+
+                Valid _ ->
+                    { model | validModel = ValidModel }
+
+        Return ->
+            case model.t1 of
+                Invalid _ ->
+                    { model | validModel = InvalidT1 }
+
+                Valid t1 ->
+                    case model.t2 of
+                        Invalid _ ->
+                            { model | validModel = InvalidT2 }
+
+                        Valid t2 ->
+                            if after t2 t1 then
+                                { model | validModel = ValidModel }
+
+                            else
+                                { model | validModel = T1NotAfterT2 }
+
+
+after : FlightDate -> FlightDate -> Bool
+after t2 t1 =
+    let
+        t2Int =
+            t2.year * 10000 + t2.month * 100 + t2.day
+
+        t1Int =
+            t1.year * 10000 + t1.month * 100 + t1.day
+    in
+    t2Int > t1Int
 
 
 validate : String -> ValidatedDate
@@ -143,6 +193,7 @@ view model =
                 [ onInput UpdateT1
                 , inheritMargin
                 , borderIndicatingError model.t1
+                , style "outline" "none"
                 ]
                 []
             , case model.option of
@@ -154,6 +205,7 @@ view model =
                         [ onInput UpdateT2
                         , inheritMargin
                         , borderIndicatingError model.t2
+                        , style "outline" "none"
                         ]
                         []
             , button ([ onClick BookingRequested, inheritMargin ] ++ buttonEnabled model) [ text "Book" ]
@@ -203,21 +255,12 @@ inValidInputStyle =
 
 buttonEnabled : Model -> List (Html.Attribute Msg)
 buttonEnabled model =
-    case model.t1 of
-        Invalid _ ->
+    case model.validModel of
+        ValidModel ->
+            []
+
+        _ ->
             [ Html.Attributes.attribute "disabled" "disabled" ]
-
-        Valid _ ->
-            if model.option == OneWay then
-                []
-
-            else
-                case model.t2 of
-                    Invalid _ ->
-                        [ Html.Attributes.attribute "disabled" "disabled" ]
-
-                    Valid _ ->
-                        []
 
 
 
