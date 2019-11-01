@@ -12,6 +12,28 @@ type Msg
     = NoOp
 
 
+type ConstantType
+    = IntegerCell String
+    | StringCell String
+
+
+type alias FormulaType =
+    { formula : String
+    , dependencies : List Cell
+    }
+
+
+type CellType
+    = Constant ConstantType
+    | Formula FormulaType
+
+
+type alias Cell =
+    { cellType : CellType
+    , cellCoordinates : { row : Int, col : Char }
+    }
+
+
 type alias Model =
     {}
 
