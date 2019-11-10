@@ -1,7 +1,9 @@
 module Main exposing (main)
 
+import Array
 import Browser
 import Html exposing (div, p, text)
+import Matrix exposing (Matrix)
 
 
 
@@ -26,21 +28,31 @@ type alias FormulaType =
 type CellType
     = Constant ConstantType
     | Formula FormulaType
+    | EmtpyCell
 
 
 type alias Cell =
     { cellType : CellType
-    , cellCoordinates : { row : Int, col : Char }
     }
 
 
 type alias Model =
-    {}
+    { sheet : Matrix.Matrix Cell }
 
 
 init : Model
 init =
-    {}
+    { sheet = Matrix.initialize 25 100 cellInit }
+
+
+rows : List Int
+rows =
+    List.range 0 99
+
+
+cellInit : Int -> Int -> Cell
+cellInit _ _ =
+    Cell EmtpyCell
 
 
 
@@ -64,7 +76,29 @@ view model =
         [ p []
             [ text "Hello world!"
             ]
+        , displaySheet model.sheet
         ]
+
+
+displaySheet : Matrix.Matrix Cell -> Html.Html Msg
+displaySheet sheet =
+    Html.table [] <|
+        List.map (displayRow sheet) rows
+
+
+displayRow : Matrix.Matrix Cell -> Int -> Html.Html Msg
+displayRow sheet row =
+    Html.tr []
+        ([ Html.td [] [ text <| String.fromInt row ] ]
+            ++ (Array.map displayCell (Matrix.getYs sheet row)
+                    |> Array.toList
+               )
+        )
+
+
+displayCell : Cell -> Html.Html Msg
+displayCell cell =
+    Html.td [] [ text "cell" ]
 
 
 main : Program () Model Msg
