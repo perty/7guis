@@ -4,6 +4,7 @@ import Array
 import Browser
 import Html exposing (div, p, text)
 import Html.Attributes exposing (style, value)
+import Html.Events exposing (onInput)
 import Matrix exposing (Matrix)
 
 
@@ -12,7 +13,7 @@ import Matrix exposing (Matrix)
 
 
 type Msg
-    = NoOp
+    = CellInput Cell String
 
 
 type ConstantType
@@ -34,6 +35,7 @@ type CellType
 
 type alias Cell =
     { cellType : CellType
+    , cellPos : ( Int, Int )
     }
 
 
@@ -46,19 +48,9 @@ init =
     { sheet = Matrix.initialize 25 100 cellInit }
 
 
-rows : List Int
-rows =
-    List.range 0 99
-
-
-cols : List Int
-cols =
-    List.range 0 24
-
-
 cellInit : Int -> Int -> Cell
-cellInit _ _ =
-    Cell EmtpyCell
+cellInit x y =
+    Cell EmtpyCell ( x, y )
 
 
 
@@ -68,8 +60,20 @@ cellInit _ _ =
 update : Msg -> Model -> Model
 update msg model =
     case msg of
-        NoOp ->
-            model
+        CellInput cell string ->
+            handleInput cell string model
+
+
+handleInput : Cell -> String -> Model -> Model
+handleInput cell text model =
+    let
+        newCell =
+            { cell | cellType = Constant (StringCell text) }
+
+        newSheet =
+            Matrix.set model.sheet cell.cellPos newCell
+    in
+    { model | sheet = newSheet }
 
 
 
@@ -143,7 +147,25 @@ displayCell cell =
 
 cellContents : Cell -> Html.Html Msg
 cellContents cell =
-    Html.input [ value "x" ] []
+    Html.input [ value (cellToString cell), onInput (CellInput cell) ] []
+
+
+cellToString : Cell -> String
+cellToString cell =
+    case cell.cellType of
+        Constant constantType ->
+            case constantType of
+                IntegerCell string ->
+                    string
+
+                StringCell string ->
+                    string
+
+        Formula formulaType ->
+            formulaType.formula
+
+        EmtpyCell ->
+            ""
 
 
 main : Program () Model Msg

@@ -80,8 +80,8 @@ initialize sizeX sizeY fn =
 
 {-| Set the cell at (x,y) to a new value. If the (x,y) is out of bounds, silently do nothing,
 -}
-set : Matrix a -> Int -> Int -> a -> Matrix a
-set matrix x y v =
+set : Matrix a -> ( Int, Int ) -> a -> Matrix a
+set matrix ( x, y ) v =
     case Array.get x matrix of
         Just aCol ->
             Array.set x (Array.set y v aCol) matrix
