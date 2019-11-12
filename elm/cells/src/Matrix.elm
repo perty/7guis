@@ -1,8 +1,9 @@
 module Matrix exposing
     ( Matrix
     , empty, initialize
-    , size, get, getXs, getYs
+    , size, get
     , set
+    , getXsOfY, getYsOfX
     )
 
 {-| Two dimensional matrix backed by Array from the Elm core, the fast immutable array
@@ -93,20 +94,20 @@ set matrix x y v =
 -}
 get : Matrix a -> Int -> Int -> Maybe a
 get matrix x y =
-    getXs matrix x |> Array.get y
+    getYsOfX matrix x |> Array.get y
 
 
 {-| Get all values along a given x as an array. If x is out of bounds, return an empty array.
 -}
-getXs : Matrix a -> Int -> Array a
-getXs matrix x =
+getYsOfX : Matrix a -> Int -> Array a
+getYsOfX matrix x =
     Maybe.withDefault Array.empty (Array.get x matrix)
 
 
 {-| Get all values along a given y as an array. If y is out of bounds, return an empty array.
 -}
-getYs : Matrix a -> Int -> Array a
-getYs matrix y =
+getXsOfY : Matrix a -> Int -> Array a
+getXsOfY matrix y =
     Array.toList matrix |> pickY y |> Array.fromList
 
 

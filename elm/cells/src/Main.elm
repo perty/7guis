@@ -130,7 +130,7 @@ displayRow : Matrix.Matrix Cell -> Int -> Html.Html Msg
 displayRow sheet row =
     Html.tr []
         ([ Html.td tdAttr [ text <| String.fromInt row ] ]
-            ++ (Array.map displayCell (Matrix.getYs sheet row)
+            ++ (Array.map displayCell (Matrix.getXsOfY sheet row)
                     |> Array.toList
                )
         )
