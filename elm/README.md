@@ -7,3 +7,7 @@ Here is the order of the challenges:
 1. [CRUD](crud)
 1. [Circle Drawer](circle-draw)
 1. [Cells](cells)
+
+## How to run them all
+
+Use `elm reactor` from  this directory. Click around to see each challenge.
