@@ -1,4 +1,4 @@
-module Main exposing (main)
+module Cells exposing (main)
 
 import Array
 import Browser

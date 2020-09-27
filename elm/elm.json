@@ -1,7 +1,13 @@
 {
     "type": "application",
     "source-directories": [
-        "src"
+        "counter/src",
+        "temp-convert/src",
+        "flight-book/src",
+        "timer/src",
+        "crud/src",
+        "circle-draw/src",
+        "cells/src"
     ],
     "elm-version": "0.19.1",
     "dependencies": {
@@ -9,6 +15,7 @@
             "elm/browser": "1.0.1",
             "elm/core": "1.0.2",
             "elm/html": "1.0.0",
+            "elm/regex": "1.0.0",
             "mdgriffith/elm-ui": "1.1.0"
         },
         "indirect": {

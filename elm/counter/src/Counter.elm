@@ -1,4 +1,4 @@
-module Main exposing (view)
+module Counter exposing (view)
 
 import Browser
 import Element exposing (Element, el, layout, paddingXY, px, row, spacingXY, text, width)

@@ -1,4 +1,4 @@
-module Main exposing (main)
+module CircleDraw exposing (main)
 
 import Browser
 import Html exposing (div, p, text)
@@ -37,7 +37,7 @@ update msg model =
 
 
 view : Model -> Html.Html Msg
-view model =
+view _ =
     div []
         [ p []
             [ text "Hello world!"

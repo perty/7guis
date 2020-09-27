@@ -1,4 +1,4 @@
-module Main exposing (main)
+module TempConvert exposing (main)
 
 import Browser
 import Element exposing (Color, Element, el, layout, none, paddingXY, rgb, row, spacingXY, text)

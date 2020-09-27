@@ -1,7 +1,7 @@
-module Main exposing (FlightDate, ValidatedDate(..), after, main, validate)
+module FlightBook exposing (FlightDate, ValidatedDate(..), after, main, validate)
 
 import Browser
-import Html exposing (button, div, input, option, select, text)
+import Html exposing (button, div, input, option, p, select, text)
 import Html.Attributes exposing (style)
 import Html.Events exposing (onClick, onInput)
 import Regex
@@ -133,7 +133,12 @@ validate string =
             validateDate d m y
 
         _ ->
-            Invalid "Format: yyyy-mm-dd"
+            Invalid ("Format: " ++ dateformat)
+
+
+dateformat : String
+dateformat =
+    "yyyy-mm-dd"
 
 
 validateDate : Int -> Int -> Int -> ValidatedDate
@@ -177,7 +182,8 @@ pickNumbers string =
 view : Model -> Html.Html Msg
 view model =
     div []
-        [ div
+        [ p [] [ text ("Date format " ++ dateformat) ]
+        , div
             [ style "display" "flex"
             , style "flex-direction" "column"
             , style "max-width" "150px"
@@ -264,7 +270,7 @@ buttonEnabled model =
 
 
 
--- Main
+-- FlightBook
 
 
 main : Program () Model Msg
