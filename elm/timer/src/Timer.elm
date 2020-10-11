@@ -1,16 +1,12 @@
 module Timer exposing (main)
 
 import Browser
-import Element exposing (centerX, column, el, fill, layout, maximum, paddingXY, px, rgb, row, spacingXY, text, width)
+import Element exposing (behindContent, centerX, centerY, column, el, fill, height, layout, maximum, none, paddingXY, px, rgb, row, spacingXY, text, width)
 import Element.Background as Background
 import Element.Border as Border
 import Element.Input as Input exposing (defaultThumb)
 import Html
 import Time
-
-
-
--- Starter. Remove this comment when started.
 
 
 type Msg
@@ -114,15 +110,15 @@ durationSlider model =
     row [ width fill ]
         [ Input.slider
             [ width fill
-            , Element.behindContent
-                (Element.el
-                    [ Element.width Element.fill
-                    , Element.height (Element.px 2)
-                    , Element.centerY
+            , behindContent
+                (el
+                    [ width Element.fill
+                    , height (Element.px 2)
+                    , centerY
                     , Background.color (rgb 0.1 0.1 0.1)
                     , Border.rounded 2
                     ]
-                    Element.none
+                    none
                 )
             ]
             { onChange = Update
