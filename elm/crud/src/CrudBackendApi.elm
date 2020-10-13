@@ -64,4 +64,11 @@ initDatabase =
     [ Person 0 "Hans" "Emil"
     , Person 1 "Max" "Mustermann"
     , Person 2 "Roman" "Tisch"
+    , Person 3 "Anders" "Andersson"
+    , Person 4 "Kim" "Wallner"
+    , Person 5 "Lars Magnus" "Eriksson"
+    , Person 6 "Doris" "Enström"
+    , Person 7 "Jacob Johan" "Anckarström"
+    , Person 8 "Per" "Lundholm"
+    , Person 9 "Elsie" "Ottar"
     ]

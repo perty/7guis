@@ -122,7 +122,17 @@ filterPrefix model =
 
 listPersons : Model -> Element Msg
 listPersons model =
-    column [ scrollbars, Border.width 1, width fill, height (fill |> minimum 200) ] (List.map listPerson model.persons)
+    let
+        persons =
+            List.filter (\p -> String.startsWith model.prefix p.lastName) model.persons
+    in
+    column
+        [ scrollbars
+        , Border.width 1
+        , width fill
+        , height (fill |> minimum 200)
+        ]
+        (List.map listPerson persons)
 
 
 listPerson : Person -> Element Msg
