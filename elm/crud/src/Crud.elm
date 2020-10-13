@@ -2,7 +2,7 @@ module Crud exposing (main)
 
 import Browser
 import CrudBackendApi exposing (Database, Person, createPerson, deletePerson, initDatabase, loadPersons, updatePerson)
-import Element exposing (Element, column, el, fill, height, layout, maximum, minimum, paddingXY, row, spacingXY, text, width)
+import Element exposing (Element, column, el, fill, height, layout, maximum, minimum, paddingXY, row, scrollbars, spacingXY, text, width)
 import Element.Border as Border
 import Element.Input as Input
 import Html
@@ -122,7 +122,7 @@ filterPrefix model =
 
 listPersons : Model -> Element Msg
 listPersons model =
-    column [ Border.width 1, width fill, height (fill |> minimum 200) ] (List.map listPerson model.persons)
+    column [ scrollbars, Border.width 1, width fill, height (fill |> minimum 200) ] (List.map listPerson model.persons)
 
 
 listPerson : Person -> Element Msg
