@@ -2,7 +2,7 @@ module Crud exposing (main)
 
 import Browser
 import CrudBackendApi exposing (Database, Person, createPerson, deletePerson, initDatabase, loadPersons, updatePerson)
-import Element exposing (Element, column, el, fill, height, layout, maximum, minimum, none, paddingXY, row, scrollbars, spacingXY, text, width)
+import Element exposing (Element, column, el, fill, height, layout, minimum, none, paddingXY, row, scrollbars, spacingXY, text, width)
 import Element.Border as Border
 import Element.Input as Input
 import Html
@@ -95,7 +95,7 @@ update msg model =
 
 view : Model -> Html.Html Msg
 view model =
-    layout [ width (fill |> maximum 600) ] <|
+    layout [ width fill ] <|
         column [ width fill, Border.width 1, paddingXY 10 10 ]
             [ row [ width fill ]
                 [ column [ spacingXY 5 5, paddingXY 20 20, width fill, height fill ]
