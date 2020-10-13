@@ -1,7 +1,7 @@
 module Crud exposing (main)
 
 import Browser
-import CrudBackendApi exposing (Database, Person, initDatabase, loadPersons)
+import CrudBackendApi exposing (Database, Person, createPerson, deletePerson, initDatabase, loadPersons, updatePerson)
 import Element exposing (Element, column, el, fill, height, layout, maximum, minimum, paddingXY, row, spacingXY, text, width)
 import Element.Border as Border
 import Element.Input as Input
@@ -46,7 +46,9 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         PersonsLoaded (Ok persons) ->
-            ( { model | persons = persons }, Cmd.none )
+            ( { model | persons = persons, database = persons, selectedPerson = Person -1 "" "" }
+            , Cmd.none
+            )
 
         PersonsLoaded (Err _) ->
             ( model, Cmd.none )
@@ -78,13 +80,13 @@ update msg model =
             ( { model | selectedPerson = newPerson }, Cmd.none )
 
         Create ->
-            ( model, Cmd.none )
+            ( model, createPerson model.database model.selectedPerson PersonsLoaded )
 
         Update ->
-            ( model, Cmd.none )
+            ( model, updatePerson model.database model.selectedPerson PersonsLoaded )
 
         Delete ->
-            ( model, Cmd.none )
+            ( model, deletePerson model.database model.selectedPerson PersonsLoaded )
 
 
 
