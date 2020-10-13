@@ -1,6 +1,7 @@
 module Crud exposing (main)
 
 import Browser
+import CrudBackendApi exposing (Person, loadPersons)
 import Element exposing (Element, column, el, fill, height, layout, maximum, minimum, paddingXY, row, spacingXY, text, width)
 import Element.Border as Border
 import Element.Input as Input
@@ -12,12 +13,7 @@ type Msg
     | Create
     | Update
     | Delete
-
-
-type alias Person =
-    { firstName : String
-    , lastName : String
-    }
+    | PersonsLoaded (Result String (List Person))
 
 
 type alias Model =
@@ -28,7 +24,7 @@ type alias Model =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { persons = [], prefix = "" }, Cmd.none )
+    ( { persons = [], prefix = "" }, loadPersons PersonsLoaded )
 
 
 
@@ -38,6 +34,12 @@ init _ =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        PersonsLoaded (Ok persons) ->
+            ( { model | persons = persons }, Cmd.none )
+
+        PersonsLoaded (Err _) ->
+            ( model, Cmd.none )
+
         UpdatePrefix p ->
             ( { model | prefix = p }, Cmd.none )
 
