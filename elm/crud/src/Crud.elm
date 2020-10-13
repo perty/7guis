@@ -2,7 +2,7 @@ module Crud exposing (main)
 
 import Browser
 import CrudBackendApi exposing (Database, Person, createPerson, deletePerson, initDatabase, loadPersons, updatePerson)
-import Element exposing (Element, column, el, fill, height, layout, maximum, minimum, paddingXY, row, scrollbars, spacingXY, text, width)
+import Element exposing (Element, column, el, fill, height, layout, maximum, minimum, none, paddingXY, row, scrollbars, spacingXY, text, width)
 import Element.Border as Border
 import Element.Input as Input
 import Html
@@ -104,7 +104,7 @@ view model =
                     ]
                 , personView model
                 ]
-            , buttonRow
+            , buttonRow (model.selectedPerson.id >= 0)
             ]
 
 
@@ -151,20 +151,28 @@ personView model =
         ]
 
 
-buttonRow =
+buttonRow selected =
     row [ spacingXY 5 5, width fill ]
         [ Input.button buttonAttr
             { onPress = Just Create
             , label = el [] <| text "Create"
             }
-        , Input.button buttonAttr
-            { onPress = Just Update
-            , label = el [] <| text "Update"
-            }
-        , Input.button buttonAttr
-            { onPress = Just Delete
-            , label = el [] <| text "Delete"
-            }
+        , if selected then
+            Input.button buttonAttr
+                { onPress = Just Update
+                , label = el [] <| text "Update"
+                }
+
+          else
+            none
+        , if selected then
+            Input.button buttonAttr
+                { onPress = Just Delete
+                , label = el [] <| text "Delete"
+                }
+
+          else
+            none
         ]
 
 
