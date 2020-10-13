@@ -1,7 +1,7 @@
 module Crud exposing (main)
 
 import Browser
-import CrudBackendApi exposing (Person, loadPersons)
+import CrudBackendApi exposing (Database, Person, initDatabase, loadPersons)
 import Element exposing (Element, column, el, fill, height, layout, maximum, minimum, paddingXY, row, spacingXY, text, width)
 import Element.Border as Border
 import Element.Input as Input
@@ -10,6 +10,9 @@ import Html
 
 type Msg
     = UpdatePrefix String
+    | UpdateFirstName String
+    | UpdateLastName String
+    | SelectPerson Person
     | Create
     | Update
     | Delete
@@ -19,12 +22,20 @@ type Msg
 type alias Model =
     { persons : List Person
     , prefix : String
+    , selectedPerson : Person
+    , database : Database
     }
 
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { persons = [], prefix = "" }, loadPersons PersonsLoaded )
+    ( { persons = []
+      , prefix = ""
+      , selectedPerson = Person -1 "" ""
+      , database = []
+      }
+    , loadPersons initDatabase PersonsLoaded
+    )
 
 
 
@@ -40,8 +51,31 @@ update msg model =
         PersonsLoaded (Err _) ->
             ( model, Cmd.none )
 
+        SelectPerson person ->
+            ( { model | selectedPerson = person }, Cmd.none )
+
         UpdatePrefix p ->
             ( { model | prefix = p }, Cmd.none )
+
+        UpdateFirstName firstName ->
+            let
+                oldPerson =
+                    model.selectedPerson
+
+                newPerson =
+                    { oldPerson | firstName = firstName }
+            in
+            ( { model | selectedPerson = newPerson }, Cmd.none )
+
+        UpdateLastName lastName ->
+            let
+                oldPerson =
+                    model.selectedPerson
+
+                newPerson =
+                    { oldPerson | lastName = lastName }
+            in
+            ( { model | selectedPerson = newPerson }, Cmd.none )
 
         Create ->
             ( model, Cmd.none )
@@ -84,25 +118,31 @@ filterPrefix model =
         ]
 
 
+listPersons : Model -> Element Msg
 listPersons model =
     column [ Border.width 1, width fill, height (fill |> minimum 200) ] (List.map listPerson model.persons)
 
 
+listPerson : Person -> Element Msg
 listPerson person =
-    el [] <| text <| person.lastName ++ "," ++ person.firstName
+    Input.button []
+        { onPress = Just (SelectPerson person)
+        , label = el [] <| text <| person.lastName ++ "," ++ person.firstName
+        }
 
 
+personView : Model -> Element Msg
 personView model =
     column [ width fill ]
         [ Input.text []
-            { onChange = UpdatePrefix
-            , text = model.prefix
+            { onChange = UpdateFirstName
+            , text = model.selectedPerson.firstName
             , placeholder = Nothing
             , label = Input.labelLeft [] (el [] <| text "Name: ")
             }
         , Input.text []
-            { onChange = UpdatePrefix
-            , text = model.prefix
+            { onChange = UpdateLastName
+            , text = model.selectedPerson.lastName
             , placeholder = Nothing
             , label = Input.labelLeft [] (el [] <| text "Surname: ")
             }

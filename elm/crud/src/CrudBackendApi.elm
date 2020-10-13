@@ -1,23 +1,32 @@
-module CrudBackendApi exposing (Person, loadPersons)
+module CrudBackendApi exposing (Database, Person, initDatabase, loadPersons)
 
 import Task
 
 
 type alias Person =
-    { firstName : String
+    { id : Int
+    , firstName : String
     , lastName : String
     }
 
 
-loadPersons : (Result String (List Person) -> msg) -> Cmd msg
-loadPersons msg =
-    Task.perform msg <| Task.succeed personLoader
+type alias Database =
+    List Person
 
 
-personLoader : Result String (List Person)
-personLoader =
+loadPersons : Database -> (Result String (List Person) -> msg) -> Cmd msg
+loadPersons database msg =
+    Task.perform msg <| Task.succeed (personLoader database)
+
+
+personLoader : Database -> Result String (List Person)
+personLoader database =
     Result.Ok
-        [ Person "Hans" "Emil"
-        , Person "Max" "Mustermann"
-        , Person "Roman" "Tisch"
-        ]
+        database
+
+
+initDatabase =
+    [ Person 0 "Hans" "Emil"
+    , Person 1 "Max" "Mustermann"
+    , Person 2 "Roman" "Tisch"
+    ]
