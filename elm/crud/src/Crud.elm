@@ -1,7 +1,7 @@
 module Crud exposing (main)
 
 import Browser
-import Element exposing (Element, column, el, fill, height, layout, maximum, paddingXY, row, spacingXY, text, width)
+import Element exposing (Element, column, el, fill, height, layout, maximum, minimum, paddingXY, row, spacingXY, text, width)
 import Element.Border as Border
 import Element.Input as Input
 import Html
@@ -44,6 +44,12 @@ update msg model =
         Create ->
             ( model, Cmd.none )
 
+        Update ->
+            ( model, Cmd.none )
+
+        Delete ->
+            ( model, Cmd.none )
+
 
 
 -- View
@@ -51,19 +57,16 @@ update msg model =
 
 view : Model -> Html.Html Msg
 view model =
-    layout [] <|
-        column
-            [ spacingXY 5 5
-            , paddingXY 20 20
-            , Border.width 1
-            , width (fill |> maximum 500)
-            ]
-            [ filterPrefix model
-            , row []
-                [ listPersons model
+    layout [ width (fill |> maximum 600) ] <|
+        column [ width fill, Border.width 1, paddingXY 10 10 ]
+            [ row [ width fill ]
+                [ column [ spacingXY 5 5, paddingXY 20 20, width fill, height fill ]
+                    [ filterPrefix model
+                    , listPersons model
+                    ]
                 , personView model
                 ]
-            , buttonRow model
+            , buttonRow
             ]
 
 
@@ -80,7 +83,7 @@ filterPrefix model =
 
 
 listPersons model =
-    column [ Border.width 1, width fill, height fill ] (List.map listPerson model.persons)
+    column [ Border.width 1, width fill, height (fill |> minimum 200) ] (List.map listPerson model.persons)
 
 
 listPerson person =
@@ -88,7 +91,7 @@ listPerson person =
 
 
 personView model =
-    column []
+    column [ width fill ]
         [ Input.text []
             { onChange = UpdatePrefix
             , text = model.prefix
@@ -104,13 +107,25 @@ personView model =
         ]
 
 
-buttonRow model =
-    row []
-        [ Input.button []
+buttonRow =
+    row [ spacingXY 5 5, width fill ]
+        [ Input.button buttonAttr
             { onPress = Just Create
             , label = el [] <| text "Create"
             }
+        , Input.button buttonAttr
+            { onPress = Just Update
+            , label = el [] <| text "Update"
+            }
+        , Input.button buttonAttr
+            { onPress = Just Delete
+            , label = el [] <| text "Delete"
+            }
         ]
+
+
+buttonAttr =
+    [ Border.width 1, Border.rounded 5, paddingXY 5 5 ]
 
 
 main : Program () Model Msg
