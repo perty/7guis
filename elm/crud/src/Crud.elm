@@ -2,7 +2,7 @@ module Crud exposing (main)
 
 import Browser
 import CrudBackendApi exposing (Database, Person, createPerson, deletePerson, initDatabase, loadPersons, updatePerson)
-import Element exposing (Element, column, el, fill, height, layout, minimum, none, paddingXY, row, scrollbars, spacingXY, text, width)
+import Element exposing (Element, column, el, fill, height, layout, minimum, none, paddingXY, row, scrollbars, shrink, spacingXY, text, width)
 import Element.Border as Border
 import Element.Input as Input
 import Html
@@ -96,13 +96,13 @@ update msg model =
 view : Model -> Html.Html Msg
 view model =
     layout [ width fill ] <|
-        column [ width fill, Border.width 1, paddingXY 10 10 ]
+        column [ width fill, paddingXY 10 10, Border.width 1, Border.rounded 5 ]
             [ row [ width fill ]
                 [ column [ spacingXY 5 5, paddingXY 20 20, width fill, height fill ]
                     [ filterPrefix model
                     , listPersons model
                     ]
-                , personView model
+                , column [ width shrink, spacingXY 5 5 ] <| personView model
                 ]
             , buttonRow model.selectedPerson
             ]
@@ -129,8 +129,11 @@ listPersons model =
     column
         [ scrollbars
         , Border.width 1
+        , Border.rounded 5
         , width fill
         , height (fill |> minimum 200)
+        , spacingXY 0 5
+        , paddingXY 5 5
         ]
         (List.map listPerson persons)
 
@@ -143,22 +146,21 @@ listPerson person =
         }
 
 
-personView : Model -> Element Msg
+personView : Model -> List (Element Msg)
 personView model =
-    column [ width fill ]
-        [ Input.text []
-            { onChange = UpdateFirstName
-            , text = model.selectedPerson.firstName
-            , placeholder = Nothing
-            , label = Input.labelLeft [] (el [] <| text "Name: ")
-            }
-        , Input.text []
-            { onChange = UpdateLastName
-            , text = model.selectedPerson.lastName
-            , placeholder = Nothing
-            , label = Input.labelLeft [] (el [] <| text "Surname: ")
-            }
-        ]
+    [ Input.text [ width (fill |> minimum 150) ]
+        { onChange = UpdateFirstName
+        , text = model.selectedPerson.firstName
+        , placeholder = Nothing
+        , label = Input.labelLeft [] (el [ width (fill |> minimum 100) ] <| text "Name: ")
+        }
+    , Input.text [ width (fill |> minimum 150) ]
+        { onChange = UpdateLastName
+        , text = model.selectedPerson.lastName
+        , placeholder = Nothing
+        , label = Input.labelLeft [] (el [ width (fill |> minimum 100) ] <| text "Surname: ")
+        }
+    ]
 
 
 buttonRow : Person -> Element Msg
@@ -171,7 +173,12 @@ buttonRow selectedPerson =
             (String.length selectedPerson.lastName > 0)
                 && (String.length selectedPerson.firstName > 0)
     in
-    row [ spacingXY 5 5, width fill ]
+    row
+        [ spacingXY 5 5
+        , width fill
+        , height (fill |> minimum 20)
+        , paddingXY 20 10
+        ]
         [ if hasValues then
             Input.button buttonAttr
                 { onPress = Just Create
