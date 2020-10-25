@@ -24,3 +24,5 @@ Temperature Converter is inspired by the Celsius/Fahrenheit converter
 from the book Programming in Scala. It is such a widespread 
 example—sometimes also in the form of a currency converter—that one 
 could give a thousand references. The same is true for the Counter task.
+
+[Try it out](src/TempConvert.elm)

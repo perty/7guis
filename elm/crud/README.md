@@ -34,3 +34,5 @@ overhead).
 
 CRUD is directly inspired by the crud example in the blog post FRP - Three 
 principles for GUI elements with bidirectional data flow.
+
+[Try it out](src/Crud.elm)

@@ -22,3 +22,5 @@ interactions is tested. The fact that slider adjustments must be reflected
 Timer is directly inspired by the timer example in the paper [Crossing State 
 Lines: Adapting Object-Oriented Frameworks to Functional Reactive
  Languages](http://cs.brown.edu/~sk/Publications/Papers/Published/ick-adapt-oo-fwk-frp/paper.pdf).
+
+[Try it out](src/Timer.elm)
