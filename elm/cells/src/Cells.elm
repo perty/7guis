@@ -1,10 +1,11 @@
 module Cells exposing (main)
 
-import Array
+import Array exposing (Array)
 import Browser
-import Html exposing (div, p, text)
-import Html.Attributes exposing (style, value)
-import Html.Events exposing (onInput)
+import Element exposing (Element, column, el, fill, height, layout, minimum, row, scrollbars, text, width)
+import Element.Border as Border
+import Element.Font as Font
+import Html
 import Matrix exposing (Matrix)
 
 
@@ -82,72 +83,33 @@ handleInput cell text model =
 
 view : Model -> Html.Html Msg
 view model =
-    div []
-        [ p []
-            [ text "Hello spreadsheet!"
-            ]
-        , displaySheet model.sheet
-        ]
+    layout [ width fill, height fill, scrollbars ] <|
+        displaySheet model.sheet
 
 
-tableAttr : List (Html.Attribute Msg)
-tableAttr =
-    [ style "border-style" "solid"
-    , style "border-width" "1px"
-    ]
-
-
-thAttr : List (Html.Attribute Msg)
-thAttr =
-    [ style "border-style" "solid"
-    , style "border-width" "1px"
-    ]
-
-
-tdAttr : List (Html.Attribute Msg)
-tdAttr =
-    [ style "border-style" "solid"
-    , style "border-width" "1px"
-    ]
-
-
-cellAttr : List (Html.Attribute Msg)
-cellAttr =
-    [ style "min-width" "30px"
-    ]
-
-
-displaySheet : Matrix.Matrix Cell -> Html.Html Msg
+displaySheet : Matrix.Matrix Cell -> Element Msg
 displaySheet sheet =
-    Html.table tableAttr
-        [ Html.thead thAttr ([ Html.th thAttr [] ] ++ List.map col2letter (List.range 0 24))
-        , Html.tbody [] (List.map (displayRow sheet) (List.range 0 99))
-        ]
+    row [] ([ firstColumn 100 ] ++ (Array.toList <| Array.indexedMap displayColumn sheet))
 
 
-col2letter : Int -> Html.Html Msg
-col2letter n =
-    Html.th thAttr [ Char.fromCode (65 + n) |> String.fromChar |> text ]
+firstColumn : Int -> Element Msg
+firstColumn rows =
+    column [] ([ el [ Font.center, width fill, height (fill |> minimum 20) ] <| text "" ] ++ List.map rowMarker (List.range 1 rows))
 
 
-displayRow : Matrix.Matrix Cell -> Int -> Html.Html Msg
-displayRow sheet row =
-    Html.tr []
-        ([ Html.td tdAttr [ text <| String.fromInt row ] ]
-            ++ (Array.map displayCell (Matrix.getXsOfY sheet row)
-                    |> Array.toList
-               )
-        )
+rowMarker : Int -> Element Msg
+rowMarker n =
+    el [] <| text <| String.fromInt n
 
 
-displayCell : Cell -> Html.Html Msg
+displayColumn : Int -> Array Cell -> Element Msg
+displayColumn index cells =
+    column [] ([ el [ Font.center, width fill ] <| text <| col2letter index ] ++ (Array.toList <| Array.map displayCell cells))
+
+
+displayCell : Cell -> Element Msg
 displayCell cell =
-    Html.td cellAttr [ cellContents cell ]
-
-
-cellContents : Cell -> Html.Html Msg
-cellContents cell =
-    Html.input [ value (cellToString cell), onInput (CellInput cell) ] []
+    el [ Border.width 1, width (fill |> minimum 50), height (fill |> minimum 20) ] <| text <| cellToString cell
 
 
 cellToString : Cell -> String
@@ -166,6 +128,11 @@ cellToString cell =
 
         EmtpyCell ->
             ""
+
+
+col2letter : Int -> String
+col2letter n =
+    Char.fromCode (65 + n) |> String.fromChar
 
 
 main : Program () Model Msg

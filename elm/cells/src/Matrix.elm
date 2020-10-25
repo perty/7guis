@@ -3,7 +3,7 @@ module Matrix exposing
     , empty, initialize
     , size, get
     , set
-    , getXsOfY, getYsOfX
+    , columns, getXsOfY, getYsOfX
     )
 
 {-| Two dimensional matrix backed by Array from the Elm core, the fast immutable array
@@ -68,6 +68,11 @@ size matrix =
                     0
     in
     ( sizeX, sizeY )
+
+
+columns : Matrix a -> List (Array a)
+columns matrix =
+    Array.toList matrix
 
 
 {-| Initialize a matrix, given desired size and a function for the value of a cell,
