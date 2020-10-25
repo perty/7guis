@@ -104,7 +104,7 @@ view model =
                     ]
                 , personView model
                 ]
-            , buttonRow (model.selectedPerson.id >= 0)
+            , buttonRow model.selectedPerson
             ]
 
 
@@ -161,12 +161,25 @@ personView model =
         ]
 
 
-buttonRow selected =
+buttonRow : Person -> Element Msg
+buttonRow selectedPerson =
+    let
+        selected =
+            selectedPerson.id >= 0
+
+        hasValues =
+            (String.length selectedPerson.lastName > 0)
+                && (String.length selectedPerson.firstName > 0)
+    in
     row [ spacingXY 5 5, width fill ]
-        [ Input.button buttonAttr
-            { onPress = Just Create
-            , label = el [] <| text "Create"
-            }
+        [ if hasValues then
+            Input.button buttonAttr
+                { onPress = Just Create
+                , label = el [] <| text "Create"
+                }
+
+          else
+            none
         , if selected then
             Input.button buttonAttr
                 { onPress = Just Update
