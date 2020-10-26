@@ -3,9 +3,10 @@ module Cells exposing (main)
 import Array exposing (Array)
 import Browser
 import Browser.Dom as Dom
-import Element exposing (Element, column, el, fill, height, layout, px, row, scrollbars, text, width)
+import Element exposing (Attribute, Element, column, el, fill, height, layout, px, rgb, row, scrollbars, text, width)
+import Element.Background as Background
 import Element.Border as Border
-import Element.Events exposing (onFocus)
+import Element.Events exposing (onFocus, onLoseFocus)
 import Element.Font as Font
 import Element.Input as Input
 import Html
@@ -21,6 +22,7 @@ import Task
 type Msg
     = CellInput Cell String
     | SelectCell Cell
+    | DeSelectCell Cell
     | NoOp
 
 
@@ -41,9 +43,16 @@ type CellType
     | EmtpyCell
 
 
+type CellState
+    = Ok
+    | Error
+
+
 type alias Cell =
     { cellType : CellType
     , cellPos : ( Int, Int )
+    , cellInput : String
+    , cellState : CellState
     }
 
 
@@ -64,7 +73,7 @@ init _ =
 
 cellInit : Int -> Int -> Cell
 cellInit x y =
-    Cell EmtpyCell ( x, y )
+    Cell EmtpyCell ( x, y ) "" Ok
 
 
 
@@ -80,6 +89,9 @@ update msg model =
         SelectCell cell ->
             ( { model | selectedPos = cell.cellPos }, focusCell cell )
 
+        DeSelectCell cell ->
+            ( parseInput cell model, Cmd.none )
+
         NoOp ->
             ( model, Cmd.none )
 
@@ -88,7 +100,26 @@ handleInput : Cell -> String -> Model -> Model
 handleInput cell text model =
     let
         newCell =
-            { cell | cellType = Constant (StringCell text) }
+            { cell | cellType = Constant (StringCell text), cellInput = text }
+
+        newSheet =
+            Matrix.set model.sheet cell.cellPos newCell
+    in
+    { model | sheet = newSheet }
+
+
+parseInput : Cell -> Model -> Model
+parseInput cell model =
+    let
+        newCell =
+            { cell
+                | cellState =
+                    if String.startsWith "=" cell.cellInput then
+                        Error
+
+                    else
+                        Ok
+            }
 
         newSheet =
             Matrix.set model.sheet cell.cellPos newCell
@@ -135,16 +166,39 @@ displayColumn selectedPos index cells =
     column [] ([ el [ Font.center, width fill ] <| text <| col2letter index ] ++ (Array.toList <| Array.map (displayCell selectedPos) cells))
 
 
+black =
+    rgb 0 0 0
+
+
+white =
+    rgb 255 255 255
+
+
+red =
+    rgb 255 0 0
+
+
+lightRed =
+    rgb 255 128 128
+
+
 displayCell : ( Int, Int ) -> Cell -> Element Msg
 displayCell selectPos cell =
     let
         attr =
-            [ Border.widthEach { top = 0, left = 0, right = 1, bottom = 1 }, width (px 110), height (px 40), htmlId cell.cellPos ]
+            (case cell.cellState of
+                Ok ->
+                    [ Border.widthEach { top = 0, left = 0, right = 1, bottom = 1 }, Border.color black, Background.color white ]
+
+                Error ->
+                    [ Border.widthEach { top = 1, left = 1, right = 3, bottom = 3 }, Border.color red, Background.color lightRed ]
+            )
+                ++ [ width (px 110), height (px 40), htmlId cell.cellPos ]
     in
     if cell.cellPos == selectPos then
-        Input.text attr
+        Input.text (attr ++ [ onLoseFocus (DeSelectCell cell) ])
             { onChange = CellInput cell
-            , text = cellToString cell
+            , text = cell.cellInput
             , placeholder = Nothing
             , label = Input.labelHidden "cell"
             }
@@ -152,12 +206,12 @@ displayCell selectPos cell =
     else
         Input.button (attr ++ [ onFocus (SelectCell cell) ])
             { onPress = Just <| SelectCell cell
-            , label = el [] <| text <| cellToString cell
+            , label = el [] <| text <| evaluateCell cell
             }
 
 
-cellToString : Cell -> String
-cellToString cell =
+evaluateCell : Cell -> String
+evaluateCell cell =
     case cell.cellType of
         Constant constantType ->
             case constantType of
