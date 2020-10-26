@@ -5,6 +5,7 @@ import Browser
 import Browser.Dom as Dom
 import Element exposing (Element, column, el, fill, height, layout, px, row, scrollbars, text, width)
 import Element.Border as Border
+import Element.Events exposing (onFocus)
 import Element.Font as Font
 import Element.Input as Input
 import Html
@@ -149,7 +150,7 @@ displayCell selectPos cell =
             }
 
     else
-        Input.button attr
+        Input.button (attr ++ [ onFocus (SelectCell cell) ])
             { onPress = Just <| SelectCell cell
             , label = el [] <| text <| cellToString cell
             }
