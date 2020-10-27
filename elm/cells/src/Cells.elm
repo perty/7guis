@@ -9,14 +9,11 @@ import Element.Border as Border
 import Element.Events exposing (onFocus, onLoseFocus)
 import Element.Font as Font
 import Element.Input as Input
+import Formula exposing (Cell, CellState(..), CellType(..), ConstantType(..), cellInit, parseCell)
 import Html
 import Html.Attributes
 import Matrix exposing (Matrix)
 import Task
-
-
-
--- Starter. Remove this comment when started.
 
 
 type Msg
@@ -24,36 +21,6 @@ type Msg
     | SelectCell Cell
     | DeSelectCell Cell
     | NoOp
-
-
-type ConstantType
-    = NumberCell Float
-    | StringCell String
-
-
-type alias FormulaType =
-    { formula : String
-    , dependencies : List Cell
-    }
-
-
-type CellType
-    = Constant ConstantType
-    | Formula FormulaType
-    | EmtpyCell
-
-
-type CellState
-    = Ok
-    | Error
-
-
-type alias Cell =
-    { cellType : CellType
-    , cellPos : ( Int, Int )
-    , cellInput : String
-    , cellState : CellState
-    }
 
 
 type alias Model =
@@ -69,11 +36,6 @@ init _ =
       }
     , Cmd.none
     )
-
-
-cellInit : Int -> Int -> Cell
-cellInit x y =
-    Cell EmtpyCell ( x, y ) "" Ok
 
 
 
@@ -112,31 +74,12 @@ parseInput : Cell -> Model -> Model
 parseInput cell model =
     let
         newCell =
-            if String.startsWith "=" cell.cellInput then
-                parseFormula cell
-
-            else
-                parseConstant cell
+            parseCell cell
 
         newSheet =
             Matrix.set model.sheet cell.cellPos newCell
     in
     { model | sheet = newSheet }
-
-
-parseFormula : Cell -> Cell
-parseFormula cell =
-    { cell | cellState = Error }
-
-
-parseConstant : Cell -> Cell
-parseConstant cell =
-    case String.toFloat cell.cellInput of
-        Just value ->
-            { cell | cellType = Constant (NumberCell value), cellState = Ok }
-
-        Nothing ->
-            { cell | cellType = Constant (StringCell cell.cellInput), cellState = Ok }
 
 
 focusCell : Cell -> Cmd Msg
@@ -199,10 +142,10 @@ displayCell selectPos cell =
     let
         attr =
             (case cell.cellState of
-                Ok ->
+                Formula.Ok ->
                     [ Border.widthEach { top = 0, left = 0, right = 1, bottom = 1 }, Border.color black, Background.color white ]
 
-                Error ->
+                Formula.Error ->
                     [ Border.widthEach { top = 1, left = 1, right = 3, bottom = 3 }, Border.color red, Background.color lightRed ]
             )
                 ++ [ width (px 110), height (px 40), htmlId cell.cellPos ]
