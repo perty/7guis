@@ -27,7 +27,7 @@ type Msg
 
 
 type ConstantType
-    = IntegerCell String
+    = NumberCell Float
     | StringCell String
 
 
@@ -100,7 +100,7 @@ handleInput : Cell -> String -> Model -> Model
 handleInput cell text model =
     let
         newCell =
-            { cell | cellType = Constant (StringCell text), cellInput = text }
+            { cell | cellInput = text }
 
         newSheet =
             Matrix.set model.sheet cell.cellPos newCell
@@ -112,19 +112,31 @@ parseInput : Cell -> Model -> Model
 parseInput cell model =
     let
         newCell =
-            { cell
-                | cellState =
-                    if String.startsWith "=" cell.cellInput then
-                        Error
+            if String.startsWith "=" cell.cellInput then
+                parseFormula cell
 
-                    else
-                        Ok
-            }
+            else
+                parseConstant cell
 
         newSheet =
             Matrix.set model.sheet cell.cellPos newCell
     in
     { model | sheet = newSheet }
+
+
+parseFormula : Cell -> Cell
+parseFormula cell =
+    { cell | cellState = Error }
+
+
+parseConstant : Cell -> Cell
+parseConstant cell =
+    case String.toFloat cell.cellInput of
+        Just value ->
+            { cell | cellType = Constant (NumberCell value), cellState = Ok }
+
+        Nothing ->
+            { cell | cellType = Constant (StringCell cell.cellInput), cellState = Ok }
 
 
 focusCell : Cell -> Cmd Msg
@@ -215,8 +227,8 @@ evaluateCell cell =
     case cell.cellType of
         Constant constantType ->
             case constantType of
-                IntegerCell string ->
-                    string
+                NumberCell value ->
+                    String.fromFloat value
 
                 StringCell string ->
                     string
