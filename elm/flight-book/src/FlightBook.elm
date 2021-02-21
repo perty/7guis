@@ -1,6 +1,10 @@
 module FlightBook exposing (FlightDate, ValidatedDate(..), after, main, validate)
 
 import Browser
+import Element exposing (centerX, column, el, fill, layout, paddingXY, paragraph, rgb, spacingXY, width)
+import Element.Border as Border
+import Element.Font as Font
+import Element.Input as Input
 import Html exposing (button, div, input, option, p, select, text)
 import Html.Attributes exposing (style)
 import Html.Events exposing (onClick, onInput)
@@ -16,6 +20,7 @@ type Msg
     | UpdateT1 String
     | UpdateT2 String
     | BookingRequested
+    | ChangeReturn OptionSelection
 
 
 type OptionSelection
@@ -45,6 +50,8 @@ type ValidModelType
 type alias Model =
     { validModel : ValidModelType
     , option : OptionSelection
+    , departureDateString : String
+    , returnDateString : String
     , t1 : ValidatedDate
     , t2 : ValidatedDate
     , message : String
@@ -55,6 +62,8 @@ init : Model
 init =
     { validModel = InvalidT1
     , option = OneWay
+    , departureDateString = ""
+    , returnDateString = ""
     , t1 = Invalid ""
     , t2 = Invalid ""
     , message = ""
@@ -75,11 +84,14 @@ update msg model =
             else
                 validatedModel { model | option = Return }
 
+        ChangeReturn option ->
+            validatedModel { model | option = option }
+
         UpdateT1 string ->
-            validatedModel { model | t1 = validate string }
+            validatedModel { model | t1 = validate string, departureDateString = string }
 
         UpdateT2 string ->
-            validatedModel { model | t2 = validate string }
+            validatedModel { model | t2 = validate string, returnDateString = string }
 
         BookingRequested ->
             validatedModel { model | message = "Booking requested" }
@@ -181,6 +193,84 @@ pickNumbers string =
 
 view : Model -> Html.Html Msg
 view model =
+    div []
+        [ viewHtml model
+        , viewElmUi model
+        ]
+
+
+viewElmUi : Model -> Html.Html Msg
+viewElmUi model =
+    let
+        selector =
+            Input.radioRow [ spacingXY 5 0 ]
+                { onChange = ChangeReturn
+                , options =
+                    [ Input.option OneWay (Element.text oneWayText)
+                    , Input.option Return (Element.text returnFlightText)
+                    ]
+                , selected = Just model.option
+                , label = Input.labelHidden "hidden"
+                }
+
+        departureField =
+            Input.text []
+                { onChange = UpdateT1
+                , text = model.departureDateString
+                , placeholder = Nothing
+                , label = Input.labelHidden "hidden"
+                }
+
+        returnField =
+            case model.option of
+                Return ->
+                    Input.text []
+                        { onChange = UpdateT2
+                        , text = model.returnDateString
+                        , placeholder = Nothing
+                        , label = Input.labelHidden "hidden"
+                        }
+
+                OneWay ->
+                    Element.none
+
+        bookButton =
+            case model.validModel of
+                ValidModel ->
+                    Input.button [ width fill, Border.width 1, Border.rounded 5 ]
+                        { onPress = Just BookingRequested
+                        , label = el [ paddingXY 5 5, centerX ] <| Element.text <| "Book"
+                        }
+
+                _ ->
+                    Input.button [ width fill, Border.width 1, Border.rounded 5 ]
+                        { onPress = Nothing
+                        , label = el [ paddingXY 5 5, centerX ] <| Element.text <| "Invalid date"
+                        }
+
+        footer =
+            el [ width fill ] <| Element.text model.message
+    in
+    layout [ width fill ] <|
+        column [ centerX, spacingXY 0 5 ]
+            [ paragraph [ Font.center ] [ Element.text <| ("Date format " ++ dateformat) ]
+            , column [ width fill, Border.width 1, Border.color lightGrey, spacingXY 0 5, paddingXY 5 5 ]
+                [ selector
+                , departureField
+                , returnField
+                , bookButton
+                , footer
+                ]
+            ]
+
+
+lightGrey : Element.Color
+lightGrey =
+    rgb 0.5 0.5 0.5
+
+
+viewHtml : Model -> Html.Html Msg
+viewHtml model =
     div []
         [ p [] [ text ("Date format " ++ dateformat) ]
         , div
