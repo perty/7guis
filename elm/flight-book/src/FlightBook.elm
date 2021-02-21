@@ -2,6 +2,7 @@ module FlightBook exposing (FlightDate, ValidatedDate(..), after, main, validate
 
 import Browser
 import Element exposing (centerX, column, el, fill, layout, paddingXY, paragraph, rgb, spacingXY, width)
+import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
 import Element.Input as Input
@@ -16,14 +17,15 @@ import Regex
 
 
 type Msg
-    = UpdateOption String
-    | UpdateT1 String
-    | UpdateT2 String
+    = UpdateSelection String
+    | UpdateDeparture String
+    | UpdateReturn String
     | BookingRequested
-    | ChangeReturn OptionSelection
+    | ChangeReturn Selection
+    | NoOp String
 
 
-type OptionSelection
+type Selection
     = OneWay
     | Return
 
@@ -42,30 +44,30 @@ type ValidatedDate
 
 type ValidModelType
     = ValidModel
-    | InvalidT1
-    | InvalidT2
-    | T1NotAfterT2
+    | InvalidDeparture
+    | InvalidReturn
+    | ReturnNotAfterDeparture
 
 
 type alias Model =
     { validModel : ValidModelType
-    , option : OptionSelection
+    , option : Selection
     , departureDateString : String
     , returnDateString : String
-    , t1 : ValidatedDate
-    , t2 : ValidatedDate
+    , departureDate : ValidatedDate
+    , returnDate : ValidatedDate
     , message : String
     }
 
 
 init : Model
 init =
-    { validModel = InvalidT1
+    { validModel = InvalidDeparture
     , option = OneWay
     , departureDateString = ""
     , returnDateString = ""
-    , t1 = Invalid ""
-    , t2 = Invalid ""
+    , departureDate = Invalid ""
+    , returnDate = Invalid ""
     , message = ""
     }
 
@@ -77,7 +79,7 @@ init =
 update : Msg -> Model -> Model
 update msg model =
     case msg of
-        UpdateOption optionString ->
+        UpdateSelection optionString ->
             if optionString == oneWayText then
                 validatedModel { model | option = OneWay }
 
@@ -87,53 +89,65 @@ update msg model =
         ChangeReturn option ->
             validatedModel { model | option = option }
 
-        UpdateT1 string ->
-            validatedModel { model | t1 = validate string, departureDateString = string }
+        UpdateDeparture string ->
+            validatedModel { model | departureDate = validate string, departureDateString = string, message = "" }
 
-        UpdateT2 string ->
-            validatedModel { model | t2 = validate string, returnDateString = string }
+        UpdateReturn string ->
+            validatedModel { model | returnDate = validate string, returnDateString = string, message = "" }
 
         BookingRequested ->
-            validatedModel { model | message = "Booking requested" }
+            validatedModel
+                { model
+                    | message =
+                        case model.option of
+                            OneWay ->
+                                "Booking requested: " ++ model.departureDateString
+
+                            Return ->
+                                "Booking requested: " ++ model.departureDateString ++ ", " ++ model.returnDateString
+                }
+
+        NoOp _ ->
+            model
 
 
 validatedModel : Model -> Model
 validatedModel model =
     case model.option of
         OneWay ->
-            case model.t1 of
+            case model.departureDate of
                 Invalid _ ->
-                    { model | validModel = InvalidT1 }
+                    { model | validModel = InvalidDeparture }
 
                 Valid _ ->
                     { model | validModel = ValidModel }
 
         Return ->
-            case model.t1 of
+            case model.departureDate of
                 Invalid _ ->
-                    { model | validModel = InvalidT1 }
+                    { model | validModel = InvalidDeparture }
 
                 Valid t1 ->
-                    case model.t2 of
+                    case model.returnDate of
                         Invalid _ ->
-                            { model | validModel = InvalidT2 }
+                            { model | validModel = InvalidReturn }
 
                         Valid t2 ->
                             if after t2 t1 then
                                 { model | validModel = ValidModel }
 
                             else
-                                { model | validModel = T1NotAfterT2 }
+                                { model | validModel = ReturnNotAfterDeparture }
 
 
 after : FlightDate -> FlightDate -> Bool
-after t2 t1 =
+after return departure =
     let
         t2Int =
-            t2.year * 10000 + t2.month * 100 + t2.day
+            return.year * 10000 + return.month * 100 + return.day
 
         t1Int =
-            t1.year * 10000 + t1.month * 100 + t1.day
+            departure.year * 10000 + departure.month * 100 + departure.day
     in
     t2Int > t1Int
 
@@ -193,7 +207,10 @@ pickNumbers string =
 
 view : Model -> Html.Html Msg
 view model =
-    div []
+    div
+        [ style "display" "flex"
+        , style "flex-direction" "row"
+        ]
         [ viewHtml model
         , viewElmUi model
         ]
@@ -213,22 +230,44 @@ viewElmUi model =
                 , label = Input.labelHidden "hidden"
                 }
 
+        formatHint =
+            Just <| Input.placeholder [] <| Element.text <| "yyyy-mm-dd"
+
         departureField =
-            Input.text []
-                { onChange = UpdateT1
+            Input.text (fieldStyle model.departureDate)
+                { onChange = UpdateDeparture
                 , text = model.departureDateString
-                , placeholder = Nothing
-                , label = Input.labelHidden "hidden"
+                , placeholder = formatHint
+                , label = Input.labelAbove [ Font.size 12 ] <| Element.text "Departure date"
                 }
 
         returnField =
+            let
+                enabled =
+                    case model.departureDate of
+                        Invalid _ ->
+                            False
+
+                        Valid _ ->
+                            True
+            in
             case model.option of
                 Return ->
-                    Input.text []
-                        { onChange = UpdateT2
+                    Input.text (fieldStyle model.returnDate)
+                        { onChange =
+                            if enabled then
+                                UpdateReturn
+
+                            else
+                                NoOp
                         , text = model.returnDateString
-                        , placeholder = Nothing
-                        , label = Input.labelHidden "hidden"
+                        , placeholder =
+                            if enabled then
+                                formatHint
+
+                            else
+                                Just <| Input.placeholder [] <| Element.text "enter departure date"
+                        , label = Input.labelAbove [ Font.size 12 ] <| Element.text "Return date"
                         }
 
                 OneWay ->
@@ -237,7 +276,7 @@ viewElmUi model =
         bookButton =
             case model.validModel of
                 ValidModel ->
-                    Input.button [ width fill, Border.width 1, Border.rounded 5 ]
+                    Input.button [ width fill, Border.width 1, Border.rounded 5, Background.color lightGrey ]
                         { onPress = Just BookingRequested
                         , label = el [ paddingXY 5 5, centerX ] <| Element.text <| "Book"
                         }
@@ -245,11 +284,19 @@ viewElmUi model =
                 _ ->
                     Input.button [ width fill, Border.width 1, Border.rounded 5 ]
                         { onPress = Nothing
-                        , label = el [ paddingXY 5 5, centerX ] <| Element.text <| "Invalid date"
+                        , label = el [ paddingXY 5 5, centerX, Font.color lightGrey ] <| Element.text <| "(Invalid date)"
                         }
 
         footer =
-            el [ width fill ] <| Element.text model.message
+            el [ width fill, Font.size 12 ] <| Element.text model.message
+
+        fieldStyle field =
+            case field of
+                Valid _ ->
+                    [ Border.width 1, Border.rounded 5, Border.color lightGrey ]
+
+                Invalid _ ->
+                    [ Border.width 1, Border.rounded 5, Border.color red ]
     in
     layout [ width fill ] <|
         column [ centerX, spacingXY 0 5 ]
@@ -266,7 +313,12 @@ viewElmUi model =
 
 lightGrey : Element.Color
 lightGrey =
-    rgb 0.5 0.5 0.5
+    rgb 0.7 0.7 0.7
+
+
+red : Element.Color
+red =
+    rgb 1 0 0
 
 
 viewHtml : Model -> Html.Html Msg
@@ -281,14 +333,14 @@ viewHtml model =
             , style "border-style" "solid"
             , style "border-color" "lightGrey"
             ]
-            [ select [ onInput UpdateOption, inheritMargin ]
+            [ select [ onInput UpdateSelection, inheritMargin ]
                 [ option [] [ text oneWayText ]
                 , option [] [ text returnFlightText ]
                 ]
             , input
-                [ onInput UpdateT1
+                [ onInput UpdateDeparture
                 , inheritMargin
-                , borderIndicatingError model.t1
+                , borderIndicatingError model.departureDate
                 , style "outline" "none"
                 ]
                 []
@@ -298,9 +350,9 @@ viewHtml model =
 
                 Return ->
                     input
-                        [ onInput UpdateT2
+                        [ onInput UpdateReturn
                         , inheritMargin
-                        , borderIndicatingError model.t2
+                        , borderIndicatingError model.returnDate
                         , style "outline" "none"
                         ]
                         []
